@@ -498,6 +498,7 @@ inline double getXcorr(Graph &g1, const Graph &g2)
 Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
 {
    //TODO: gw1とgw2のチェック
+   std::cout << "getXcorrEx:Start running..." << std::endl;
    std::vector<double> output_x;
    std::vector<std::complex<double>> output_y;
    const auto range = static_cast<unsigned>(gw2.getSec() * gw2.getFs());
@@ -508,6 +509,7 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
    auto cp_gw2 = gw2;//Copy
 
    std::thread thread1([&] {
+      std::cout << "getXcorrEx:Thread1 started" << std::endl;
       const auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
       for (auto i = center_range; i < range; ++i)
       {
@@ -519,9 +521,10 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
       const auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
       const auto dur = end - start;        // 要した時間を計算
       const auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-      std::cout << "getXcorrEx_Thread1End:" << msec << " milli sec \n";
+      std::cout << "getXcorrEx:Thread1 finished " << msec << " milli sec \n";
    });
    std::thread thread2([&] {
+      std::cout << "getXcorrEx:Thread2 started" << std::endl;
       const auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
       cp_gw2.moveAmplitude(-cp_gw2.getSec() / 2.0);
       for (unsigned i = 0; i < center_range; ++i)
@@ -534,10 +537,10 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
       const auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
       const auto dur = end - start;        // 要した時間を計算
       const auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-      std::cout << "getXcorrEx_Thread2End:" << msec << " milli sec \n";
+      std::cout << "getXcorrEx:Thread2 finished " << msec << " milli sec \n";
    });
    thread1.join();
    thread2.join();
-
+   std::cout << "getXcorrEx:All finished" << std::endl;
    return { output_x,output_y };
 }
