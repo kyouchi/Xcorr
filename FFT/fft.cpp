@@ -103,6 +103,6 @@ void lc_inverse_fft( const vector< complex<double> >& a,
     lc_fft( a, ids, n_level, pout, !0 );
     auto N = a.size();
     for_each( pout->begin(), pout->end(),
-             [N](complex<double>& val){val/=N;} );
+             [N](complex<double>& val){val/=static_cast<double>(N);} );
     return;
 }

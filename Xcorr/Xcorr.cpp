@@ -13,12 +13,12 @@
 int main()
 {
    const auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-   const auto fs = 8192.0;
+   const auto fs = 8192;
    std::list<double> list = { -1,-1,-1,1,1,1,1,-1,1,-1,1,1,-1,-1,1 };//PN符号
    std::thread th1([&]
    {
       std::cout << "Graph1" << std::endl;
-      GenerateWave graph1(fs, list.size());
+      GenerateWave graph1(fs, static_cast<double>(list.size()));
       const auto fn1 = [&](double tau, double a) {return std::make_unique<GenerateWave>(fs, 1)->generateSquare(tau, a); };
       graph1.generatePrbsWave(fs, list, fn1);
       auto cp_graph1 = graph1;
@@ -29,7 +29,7 @@ int main()
    std::thread th2([&]
    {
       std::cout << "Graph2" << std::endl;
-      GenerateWave graph2(fs, list.size());
+      GenerateWave graph2(fs, static_cast<double>(list.size()));
       const auto fn2 = [&](double tau, double a) {return std::make_unique<GenerateWave>(fs, 1)->generateSquare(tau, a); };
       graph2.generatePrbsWave(fs, list, fn2);
       auto cp_graph2 = graph2;
@@ -42,7 +42,7 @@ int main()
    std::thread th3([&]
    {
       std::cout << "Graph3" << std::endl;
-      GenerateWave graph3(fs, list.size());
+      GenerateWave graph3(fs, static_cast<double>(list.size()));
       const auto fn3 = [&](double tau, double a) {return std::make_unique<GenerateWave>(fs, 1)->generateSineUnsignedWave(tau, a, 1); };
       graph3.generatePrbsWave(fs, list, fn3);
       auto cp_graph3 = graph3;
@@ -53,7 +53,7 @@ int main()
    std::thread th4([&]
    {
       std::cout << "Graph4" << std::endl;
-      GenerateWave graph4(fs, list.size());
+      GenerateWave graph4(fs, static_cast<double>(list.size()));
       const auto fn4 = [&](double tau, double a) {return std::make_unique<GenerateWave>(fs, 1)->generateSineUnsignedWave(tau, a, 1); };
       graph4.generatePrbsWave(fs, list, fn4);
       auto cp_graph4 = graph4;
