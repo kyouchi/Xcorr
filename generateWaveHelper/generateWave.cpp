@@ -412,7 +412,7 @@ bool GenerateWave::setWaveData(const std::vector<std::complex<double>> &p_v)
    else
    {
       //サイズが異なっている為、整合性が保たれない。
-      assert(p_v->size() == this->t_.size());
+      assert(p_v.size() == this->t_.size());
       return false;
    }
    return true;
