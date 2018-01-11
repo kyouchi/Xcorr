@@ -1,8 +1,8 @@
 set encoding utf8
 set xl "t[sec]"
 set yl "Amplitude"
-set xrange [-7.5:7.49988]
-set yrange [-28713:61532.7]
+set xrange [-37.5:37.499]
+set yrange [-18307.1:38513.1]
 set grid
 set title "Waveform"
 plot "Xcorr4.plt" with lp

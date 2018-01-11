@@ -418,7 +418,7 @@ bool GenerateWave::setWaveData(const std::vector<std::complex<double>> &p_v)
    return true;
 }
 
-Graph GenerateWave::moveAmplitude(const double move_time)
+inline Graph GenerateWave::moveAmplitude(const double move_time)
 {
    if (-(this->sec_ / 2) >= move_time || move_time >= this->sec_ / 2)
    {
@@ -428,15 +428,14 @@ Graph GenerateWave::moveAmplitude(const double move_time)
    }
 
    const auto range = (fs_ * move_time);
-   if(0 <= range)
+   if (0 <= range)
    {
       for (auto i = 0; i < range; ++i)
       {
          v_.insert(v_.begin(), v_.back());//末端を先端にコピー
          v_.pop_back();//末端を削除
       }
-   }
-   else
+   } else
    {
       for (auto i = 0; i > range; --i)
       {
@@ -444,7 +443,35 @@ Graph GenerateWave::moveAmplitude(const double move_time)
          v_.erase(v_.begin());//先端を削除
       }
    }
-   return {t_,v_};
+   return { t_,v_ };
+}
+
+inline Graph GenerateWave::moveAmplitudeOutofZero(const double move_time)
+{
+   if (-(this->sec_ / 2) >= move_time || move_time >= this->sec_ / 2)
+   {
+      //開始時間が範囲外
+      assert(move_time <= this->sec_ / 2);
+      assert(-(this->sec_ / 2) <= move_time);
+   }
+
+   const auto range = (fs_ * move_time);
+   if (0 <= range)
+   {
+      for (auto i = 0; i < range; ++i)
+      {
+         v_.insert(v_.begin(), 0);//先端に0を挿入
+         v_.pop_back();//末端を削除
+      }
+   } else
+   {
+      for (auto i = 0; i > range; --i)
+      {
+         v_.push_back(0);//末端に0を挿入
+         v_.erase(v_.begin());//先端を削除
+      }
+   }
+   return { t_,v_ };
 }
 
 GenerateWave GenerateWave::operator+(GenerateWave &gw) const
@@ -516,7 +543,7 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
          auto graph2 = gw2.getGraph();
          output_x[i] = (static_cast<double>(i) - static_cast<double>(center_range)) / gw2.getFs();
          output_y[i] = getXcorr(graph1, graph2);
-         gw2.moveAmplitude(1.0 / gw2.getFs());
+         gw2.moveAmplitudeOutofZero(1.0 / gw2.getFs());
       }
       const auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
       const auto dur = end - start;        // 要した時間を計算
@@ -526,14 +553,17 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
    std::thread thread2([&] {
       std::cout << "getXcorrEx:Thread2 started" << std::endl;
       const auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-      cp_gw2.moveAmplitude(-cp_gw2.getSec() / 2.0);
-      for (unsigned i = 0; i < center_range; ++i)
+      for (auto i = center_range; i > 0; --i)
       {
          auto cp_graph2 = cp_gw2.getGraph();
          output_x[i] = (static_cast<double>(i) - static_cast<double>(center_range)) / cp_gw2.getFs();
          output_y[i] = getXcorr(graph1, cp_graph2);
-         cp_gw2.moveAmplitude(1.0 / cp_gw2.getFs());
+         cp_gw2.moveAmplitudeOutofZero(-1.0 / cp_gw2.getFs());
       }
+      //unsignedなので0の時も書く
+      auto cp_graph2 = cp_gw2.getGraph();
+      output_x[0] = -static_cast<double>(center_range) / cp_gw2.getFs();
+      output_y[0] = getXcorr(graph1, cp_graph2);
       const auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
       const auto dur = end - start;        // 要した時間を計算
       const auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
@@ -541,6 +571,7 @@ Graph getXcorrEx(const GenerateWave &gw1,GenerateWave &gw2)
    });
    thread1.join();
    thread2.join();
+
    std::cout << "getXcorrEx:All finished" << std::endl;
    return { output_x,output_y };
 }

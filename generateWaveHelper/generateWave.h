@@ -55,7 +55,8 @@ public:
    bool setWaveData(const std::vector<std::complex<double>> &p_v);
 
    //信号をずらす為の関数
-   Graph moveAmplitude(const double start_time);
+   inline Graph moveAmplitude(const double start_time);
+   inline Graph moveAmplitudeOutofZero(const double move_time);
 
    GenerateWave operator +(GenerateWave &gw) const;
 
